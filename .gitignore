@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+*.env
+
+# Node / React
+node_modules/
+build/
+dist/
+
+# Docker
+*.log
+*.pid
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Compiled files
+*.egg-info/
+
+# Misc
+.env
