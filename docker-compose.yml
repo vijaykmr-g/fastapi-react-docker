@@ -2,20 +2,39 @@ version: "3.9"
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload  # ✅ enables auto reload
+    volumes:
+      - ./backend:/app      # ✅ syncs your local backend folder
+      - /app/__pycache__    # ⚠️ avoid overwriting Python cache files
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1         # 🚫 prevent .pyc creation conflicts
+      - PYTHONUNBUFFERED=1                # ✅ ensures logs are visible live
     ports:
-      - "8000:8000"
+      - "8000:8000"         # backend accessible at localhost:8000
     networks:
       - app-network
+    restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+    command: npm start -- --host 0.0.0.0  # ✅ runs React dev server
+    environment:
+      - CHOKIDAR_USEPOLLING=true          # 👀 ensures file watcher works inside Docker
+      - WATCHPACK_POLLING=true            # 🧩 extra watcher for newer React setups
+    volumes:
+      - ./frontend:/app                   # ✅ sync local frontend folder
+      - /app/node_modules                 # 🚀 prevent overwriting node_modules
+      - /app/build                        # ⚠️ avoid replacing React build folder
     ports:
-      - "3000:3000"
+      - "3000:3000"                       # frontend accessible at localhost:3000
     networks:
       - app-network
     depends_on:
-      - backend
+      - backend                           # ensures backend starts first
+    restart: always                       # 🔄 auto-restart on crash
 
 networks:
   app-network:

@@ -1,0 +1,27 @@
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# System / IDE files
+.DS_Store
+.vscode
+.idea
+*.swp
+
+# Git files
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Local data or logs
+*.log
