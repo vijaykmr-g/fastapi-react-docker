@@ -1,0 +1,22 @@
+# Ignore node_modules (will be created inside container)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Production build output (for local dev Docker)
+build
+dist
+
+# System / IDE files
+.DS_Store
+.vscode
+.idea
+*.swp
+
+# Git files
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
