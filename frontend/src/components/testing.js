@@ -6,4 +6,4 @@ function Testing({car}){
     )
 }
 
-export default Testing
+// export default Testing
