@@ -95,7 +95,7 @@ const [newProduct,setNewProduct] = useState({
 
   const handledelete = async (id) =>{
     try{
-      const deleteproduct = await axios.delete(`http://localhost:8000/products/${id}`)
+      await axios.delete(`http://localhost:8000/products/${id}`)
       alert("Product deleted!");
       fetchproducts();
     }

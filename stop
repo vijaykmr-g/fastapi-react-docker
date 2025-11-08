@@ -1,0 +1,23 @@
+[33mcommit d599f0a065b25f819c00175ffcab0f4ea7db59e3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: vijaykmr-g <arunvj5757@gmail.com>
+Date:   Fri Nov 7 10:23:31 2025 +0530
+
+    updtaed backend and frontend files
+
+[33mcommit e165404998d458a47e265fe20e3c4b640bf3ddcd[m
+Author: vijaykmr-g <arunvj5757@gmail.com>
+Date:   Mon Nov 3 17:10:14 2025 +0530
+
+    Added frontend folder
+
+[33mcommit dec0e5b8a95d799cb0e2eff3a1f8340b2a4dbe21[m
+Author: vijaykmr-g <arunvj5757@gmail.com>
+Date:   Sun Nov 2 20:04:47 2025 +0530
+
+    added new file in js and modified backed base url function
+
+[33mcommit 3ca44289ff8d1224cf8b1944838677694c1e24e4[m
+Author: vijaykmr-g <arunvj5757@gmail.com>
+Date:   Wed Oct 22 18:31:05 2025 +0530
+
+    Intial commit FastAPI + React Docker setup
