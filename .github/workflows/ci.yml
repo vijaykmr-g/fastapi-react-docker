@@ -12,11 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: .
+        working-directory: ./backend
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: .
 
       - name: Set up Python
         uses: actions/setup-python@v5
