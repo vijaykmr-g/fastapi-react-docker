@@ -35,6 +35,7 @@ jobs:
   frontend-tests:
     name: ⚛️ Run React Frontend Tests
     runs-on: ubuntu-latest
+    needs: backend 
     defaults:
       run:
         working-directory: frontend
