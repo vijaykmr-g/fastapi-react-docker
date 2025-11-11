@@ -40,7 +40,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      # 👇 Correct path — remove extra folder name
       - name: Install dependencies
         working-directory: ./Backend
         run: |
@@ -53,3 +52,29 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)
           pytest --maxfail=1 --disable-warnings -q
+
+  frontend-tests:
+    name: ⚛️ Run React Frontend Tests
+    runs-on: ubuntu-latest
+    needs: backend-tests  # Run after backend tests
+
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🧩 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 🧰 Install frontend dependencies
+        working-directory: ./Frontend
+        run: npm ci
+
+      - name: ✅ Run frontend tests
+        working-directory: ./Frontend
+        run: npm test -- --watchAll=false
+
+      - name: 🧹 Build frontend (optional sanity check)
+        working-directory: ./Frontend
+        run: npm run build
