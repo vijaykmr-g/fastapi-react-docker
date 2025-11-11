@@ -78,35 +78,41 @@ describe("App Component CRUD Tests", () => {
     expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
   });
 
-  // 🧩 Test 5 — Submit updated product successfully
-  test("submits updated product successfully", async () => {
-    axios.get.mockResolvedValueOnce({
-      data: [
-        {
-          product_id: 1,
-          name: "Test Product",
-          description: "Good product",
-          price: 99,
-          stock_quantity: 10,
-        },
-      ],
-    });
-
-    axios.put.mockResolvedValueOnce({ status: 200 });
-
-    render(<App />);
-
-    // Wait for the update button and click it
-    const updateBtn = await screen.findByText(/update/i);
-    fireEvent.click(updateBtn);
-
-    // Wait for the "save" button in the popup
-    const saveButton = await screen.findByTestId("save-btn");
-    fireEvent.click(saveButton);
-
-    // Verify axios.put was called
-    await waitFor(() => expect(axios.put).toHaveBeenCalledTimes(1));
-
+  // 🧩 Test — Submit updated product successfully
+test("submits updated product successfully", async () => {
+  // Mock API responses
+  axios.get.mockResolvedValueOnce({
+    data: [
+      {
+        product_id: 1,
+        name: "Test Product",
+        description: "Good product",
+        price: 99,
+        stock_quantity: 10,
+      },
+    ],
   });
+
+  axios.put.mockResolvedValueOnce({ status: 200 });
+
+  render(<App />);
+
+  // Wait for the Update button to appear and click it
+  const updateBtn = await screen.findByText(/update/i);
+  fireEvent.click(updateBtn);
+
+  // ✅ Wait for the modal to appear by checking the heading
+  await waitFor(() => screen.getByText(/Update Product/i));
+
+  // Now get the Save button and click
+  const saveButton = screen.getByTestId("save-btn");
+  fireEvent.click(saveButton);
+
+  // Verify axios.put was called
+  await waitFor(() => {
+    expect(axios.put).toHaveBeenCalledTimes(1);
+  });
+});
+
 
 });
