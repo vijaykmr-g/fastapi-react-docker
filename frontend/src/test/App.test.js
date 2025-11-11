@@ -78,59 +78,66 @@ describe("App Component CRUD Tests", () => {
     expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
   });
 
-  // 🧩 Test — Submit updated product successfully
-  test("submits updated product successfully and updates table", async () => {
-    // 1. Mock initial GET response (products to display)
-    axios.get.mockResolvedValueOnce({
-      data: [
-        {
-          product_id: 1,
-          name: "Old Name", // Use distinct name for better verification
-          description: "Good product",
-          price: 99,
-          stock_quantity: 10,
-        },
-      ],
-    });
-
-    // 2. Mock successful PUT response
-    axios.put.mockResolvedValueOnce({ status: 200 });
-
-    // 3. Render the component
-    render(<App />);
-
-    // Wait for the initial product to load and get the 'update' button
-    const updateBtn = await screen.findByText(/update/i);
-    fireEvent.click(updateBtn); // Opens the modal
-
-    // 4. Wait for the modal title to appear
-    const updateHeading = await screen.findByText(/Update Product/i);
-    expect(updateHeading).toBeInTheDocument();
-
-    // 5. Change the product name in the form
-    const nameInput = screen.getByLabelText(/Name:/i);
-    fireEvent.change(nameInput, { target: { value: "New Updated Name" } });
-
-    // 6. Get the Save button and click
-    const saveButton = screen.getByTestId("save-btn");
-    fireEvent.click(saveButton);
-
-    // 7. Verify the PUT request was called with the updated data
-    await waitFor(() => {
-      expect(axios.put).toHaveBeenCalledTimes(1);
-      expect(axios.put).toHaveBeenCalledWith(
-        "http://localhost:8000/products/1",
-        expect.objectContaining({ name: "New Updated Name" })
-      );
-    });
-
-    // 8. Verify the table is updated without a re-fetch (optimistic update logic)
-    // The 'Update Product' modal should be gone
-    expect(updateHeading).not.toBeInTheDocument(); 
-    
-    // The new name should appear in the table
-    expect(screen.getByText("New Updated Name")).toBeInTheDocument();
+  test("submits updated product successfully and updates table (Revised)", async () => {
+  // Mock API responses
+  axios.get.mockResolvedValueOnce({
+    data: [
+      {
+        product_id: 1,
+        name: "Old Test Product", // Ensure this name appears first
+        description: "Good product",
+        price: 99,
+        stock_quantity: 10,
+      },
+    ],
   });
+
+  axios.put.mockResolvedValueOnce({ status: 200 });
+  
+  // 1. Render the component
+  render(<App />);
+
+  // 2. 🎯 CRITICAL: Wait for the product to appear to confirm the GET was successful
+  await screen.findByText("Old Test Product");
+
+  // 3. Find the 'update' button associated with the product and click it
+  // Since there's only one product, we can safely find the 'update' text
+  const updateBtn = screen.getByRole('button', { name: /update/i });
+  fireEvent.click(updateBtn); 
+
+  // 4. ✅ FIX: Wait for the modal title to appear
+  // We use findByText again, but we are more confident the click worked now.
+  const updateHeading = await screen.findByText(/Update Product/i);
+  expect(updateHeading).toBeInTheDocument();
+
+  // 5. Change the product name in the form
+  // You need to find the input by its associated label text
+  const nameInput = screen.getByLabelText(/Name:/i);
+  fireEvent.change(nameInput, { target: { value: "New Updated Name" } });
+
+  // 6. Get the Save button (using data-testid for reliability) and click
+  const saveButton = screen.getByTestId("save-btn");
+  fireEvent.click(saveButton);
+
+  // 7. Verify the PUT request was called 
+  await waitFor(() => {
+    expect(axios.put).toHaveBeenCalledTimes(1);
+    expect(axios.put).toHaveBeenCalledWith(
+      "http://localhost:8000/products/1",
+      expect.objectContaining({ name: "New Updated Name" })
+    );
+  });
+
+  // 8. Verify the optimistic update (New name appears, old name is gone)
+  await waitFor(() => {
+      expect(screen.getByText("New Updated Name")).toBeInTheDocument();
+      expect(screen.queryByText("Old Test Product")).not.toBeInTheDocument();
+  });
+  
+  // 9. Verify the modal is closed
+  expect(screen.queryByText(/Update Product/i)).not.toBeInTheDocument();
+
+});
 
 
 });
