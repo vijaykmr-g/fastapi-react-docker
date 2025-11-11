@@ -2,12 +2,12 @@
  * @jest-environment jsdom
  */
 
-const React = require("react");
-const { render, screen, waitFor, fireEvent } = require("@testing-library/react");
-const axios = require("axios");
-const App = require("../App").default;
+import React from "react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import axios from "axios";
+import App from "../App";
 
-// ✅ Proper Axios mock setup
+// ✅ Mock Axios
 jest.mock("axios", () => ({
   get: jest.fn(),
   post: jest.fn(),
@@ -51,19 +51,16 @@ describe("App Component CRUD Tests", () => {
   test("opens Add Product popup when button clicked", async () => {
     render(<App />);
     fireEvent.click(screen.getByText(/Add Product/i));
-
-    expect(await screen.findByText(/Add Product/i)).toBeInTheDocument();
+    expect(await screen.findByText(/ADD/i)).toBeInTheDocument();
   });
 
   // 🧩 Test 4 — Open Update popup
-  // 🧩 Test 4 — Open Update popup (FIXED)
-test("opens Update popup on update button click", async () => {
-    // 1. Mock GET response to populate the table
+  test("opens Update popup on update button click", async () => {
     axios.get.mockResolvedValueOnce({
       data: [
         {
           product_id: 1,
-          name: "Test Product", // Use a unique product name
+          name: "Test Product",
           description: "Good product",
           price: 99,
           stock_quantity: 10,
@@ -72,81 +69,117 @@ test("opens Update popup on update button click", async () => {
     });
 
     render(<App />);
-
-    // 2. Wait for the product to appear to confirm the table is loaded
     await screen.findByText("Test Product");
 
-    // 3. Find the update button (using role is robust)
-    const updateBtn = screen.getByRole('button', { name: /update/i });
-    
-    // 4. Click the button to open the modal
+    const updateBtn = screen.getByRole("button", { name: /update/i });
     fireEvent.click(updateBtn);
 
-    // 5. Assert the modal title appears
-    // findByText handles the waiting needed for the state change (showPopup=true)
     expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
-});
-
-  test("submits updated product successfully and updates table (Revised)", async () => {
-  // Mock API responses
-  axios.get.mockResolvedValueOnce({
-    data: [
-      {
-        product_id: 1,
-        name: "Old Test Product", // Ensure this name appears first
-        description: "Good product",
-        price: 99,
-        stock_quantity: 10,
-      },
-    ],
   });
 
-  axios.put.mockResolvedValueOnce({ status: 200 });
-  
-  // 1. Render the component
-  render(<App />);
+  // 🧩 Test 5 — Update product successfully
+  test("submits updated product and updates table", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: [
+        {
+          product_id: 1,
+          name: "Old Test Product",
+          description: "Good product",
+          price: 99,
+          stock_quantity: 10,
+        },
+      ],
+    });
 
-  // 2. 🎯 CRITICAL: Wait for the product to appear to confirm the GET was successful
-  await screen.findByText("Old Test Product");
+    axios.put.mockResolvedValueOnce({ status: 200 });
 
-  // 3. Find the 'update' button associated with the product and click it
-  // Since there's only one product, we can safely find the 'update' text
-  const updateBtn = screen.getByRole('button', { name: /update/i });
-  fireEvent.click(updateBtn); 
+    render(<App />);
+    await screen.findByText("Old Test Product");
 
-  // 4. ✅ FIX: Wait for the modal title to appear
-  // We use findByText again, but we are more confident the click worked now.
-  const updateHeading = await screen.findByText(/Update Product/i);
-  expect(updateHeading).toBeInTheDocument();
+    const updateBtn = screen.getByRole("button", { name: /update/i });
+    fireEvent.click(updateBtn);
 
-  // 5. Change the product name in the form
-  // You need to find the input by its associated label text
-  const nameInput = screen.getByLabelText(/Name:/i);
-  fireEvent.change(nameInput, { target: { value: "New Updated Name" } });
+    const nameInput = screen.getByLabelText(/Name:/i);
+    fireEvent.change(nameInput, { target: { value: "New Updated Name" } });
 
-  // 6. Get the Save button (using data-testid for reliability) and click
-  const saveButton = screen.getByTestId("save-btn");
-  fireEvent.click(saveButton);
+    const saveButton = screen.getByTestId("save-btn");
+    fireEvent.click(saveButton);
 
-  // 7. Verify the PUT request was called 
-  await waitFor(() => {
-    expect(axios.put).toHaveBeenCalledTimes(1);
-    expect(axios.put).toHaveBeenCalledWith(
-      "http://localhost:8000/products/1",
-      expect.objectContaining({ name: "New Updated Name" })
-    );
-  });
+    await waitFor(() => {
+      expect(axios.put).toHaveBeenCalledTimes(1);
+      expect(axios.put).toHaveBeenCalledWith(
+        "http://localhost:8000/products/1",
+        expect.objectContaining({ name: "New Updated Name" })
+      );
+    });
 
-  // 8. Verify the optimistic update (New name appears, old name is gone)
-  await waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText("New Updated Name")).toBeInTheDocument();
       expect(screen.queryByText("Old Test Product")).not.toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/Update Product/i)).not.toBeInTheDocument();
   });
-  
-  // 9. Verify the modal is closed
-  expect(screen.queryByText(/Update Product/i)).not.toBeInTheDocument();
 
-});
+  // 🧩 Test 6 — Add new product
+  test("adds a new product successfully", async () => {
+    axios.get.mockResolvedValueOnce({ data: [] });
+    axios.post.mockResolvedValueOnce({
+      data: { product_id: 2, name: "New Product", description: "Desc", price: 50, stock_quantity: 3 },
+    });
+    axios.get.mockResolvedValueOnce({
+      data: [
+        { product_id: 2, name: "New Product", description: "Desc", price: 50, stock_quantity: 3 },
+      ],
+    });
 
+    render(<App />);
 
+    fireEvent.click(screen.getByText(/Add Product/i));
+
+    fireEvent.change(screen.getByLabelText(/Name:/i), { target: { value: "New Product" } });
+    fireEvent.change(screen.getByLabelText(/Description:/i), { target: { value: "Desc" } });
+    fireEvent.change(screen.getByLabelText(/Price:/i), { target: { value: "50" } });
+    fireEvent.change(screen.getByLabelText(/Stock Quantity/i), { target: { value: "3" } });
+
+    fireEvent.click(screen.getByText(/ADD/i));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(axios.post).toHaveBeenCalledWith(
+        "http://localhost:8000/products",
+        expect.objectContaining({ name: "New Product" })
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("New Product")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/ADD/i)).not.toBeInTheDocument();
+  });
+
+  // 🧩 Test 7 — Delete a product
+  test("deletes a product successfully", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: [{ product_id: 1, name: "Delete Me", description: "", price: 10, stock_quantity: 1 }],
+    });
+    axios.delete.mockResolvedValueOnce({});
+    axios.get.mockResolvedValueOnce({ data: [] });
+
+    render(<App />);
+    await screen.findByText("Delete Me");
+
+    window.confirm = jest.fn(() => true); // Mock confirm dialog
+    const deleteBtn = screen.getByRole("button", { name: /delete/i });
+    fireEvent.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(axios.delete).toHaveBeenCalledWith("http://localhost:8000/products/1");
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Delete Me")).not.toBeInTheDocument();
+    });
+  });
 });
