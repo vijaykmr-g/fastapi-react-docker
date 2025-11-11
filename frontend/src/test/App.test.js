@@ -56,12 +56,14 @@ describe("App Component CRUD Tests", () => {
   });
 
   // 🧩 Test 4 — Open Update popup
-  test("opens Update popup on update button click", async () => {
+  // 🧩 Test 4 — Open Update popup (FIXED)
+test("opens Update popup on update button click", async () => {
+    // 1. Mock GET response to populate the table
     axios.get.mockResolvedValueOnce({
       data: [
         {
           product_id: 1,
-          name: "Test Product",
+          name: "Test Product", // Use a unique product name
           description: "Good product",
           price: 99,
           stock_quantity: 10,
@@ -71,12 +73,19 @@ describe("App Component CRUD Tests", () => {
 
     render(<App />);
 
-    // Wait for update button to appear
-    const updateBtn = await screen.findByText(/update/i);
+    // 2. Wait for the product to appear to confirm the table is loaded
+    await screen.findByText("Test Product");
+
+    // 3. Find the update button (using role is robust)
+    const updateBtn = screen.getByRole('button', { name: /update/i });
+    
+    // 4. Click the button to open the modal
     fireEvent.click(updateBtn);
 
+    // 5. Assert the modal title appears
+    // findByText handles the waiting needed for the state change (showPopup=true)
     expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
-  });
+});
 
   test("submits updated product successfully and updates table (Revised)", async () => {
   // Mock API responses
