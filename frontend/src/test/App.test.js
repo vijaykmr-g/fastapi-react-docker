@@ -79,40 +79,58 @@ describe("App Component CRUD Tests", () => {
   });
 
   // 🧩 Test — Submit updated product successfully
-test("submits updated product successfully", async () => {
-  // Mock API responses
-  axios.get.mockResolvedValueOnce({
-    data: [
-      {
-        product_id: 1,
-        name: "Test Product",
-        description: "Good product",
-        price: 99,
-        stock_quantity: 10,
-      },
-    ],
+  test("submits updated product successfully and updates table", async () => {
+    // 1. Mock initial GET response (products to display)
+    axios.get.mockResolvedValueOnce({
+      data: [
+        {
+          product_id: 1,
+          name: "Old Name", // Use distinct name for better verification
+          description: "Good product",
+          price: 99,
+          stock_quantity: 10,
+        },
+      ],
+    });
+
+    // 2. Mock successful PUT response
+    axios.put.mockResolvedValueOnce({ status: 200 });
+
+    // 3. Render the component
+    render(<App />);
+
+    // Wait for the initial product to load and get the 'update' button
+    const updateBtn = await screen.findByText(/update/i);
+    fireEvent.click(updateBtn); // Opens the modal
+
+    // 4. Wait for the modal title to appear
+    const updateHeading = await screen.findByText(/Update Product/i);
+    expect(updateHeading).toBeInTheDocument();
+
+    // 5. Change the product name in the form
+    const nameInput = screen.getByLabelText(/Name:/i);
+    fireEvent.change(nameInput, { target: { value: "New Updated Name" } });
+
+    // 6. Get the Save button and click
+    const saveButton = screen.getByTestId("save-btn");
+    fireEvent.click(saveButton);
+
+    // 7. Verify the PUT request was called with the updated data
+    await waitFor(() => {
+      expect(axios.put).toHaveBeenCalledTimes(1);
+      expect(axios.put).toHaveBeenCalledWith(
+        "http://localhost:8000/products/1",
+        expect.objectContaining({ name: "New Updated Name" })
+      );
+    });
+
+    // 8. Verify the table is updated without a re-fetch (optimistic update logic)
+    // The 'Update Product' modal should be gone
+    expect(updateHeading).not.toBeInTheDocument(); 
+    
+    // The new name should appear in the table
+    expect(screen.getByText("New Updated Name")).toBeInTheDocument();
   });
-
-  axios.put.mockResolvedValueOnce({ status: 200 });
-
-  render(<App />);
-
-  // Wait for the Update button to appear and click it
-  const updateBtn = await screen.findByText(/update/i);
-  fireEvent.click(updateBtn);
-
-  // ✅ Wait for the modal to appear by checking the heading
-  await waitFor(() => screen.getByText(/Update Product/i));
-
-  // Now get the Save button and click
-  const saveButton = screen.getByTestId("save-btn");
-  fireEvent.click(saveButton);
-
-  // Verify axios.put was called
-  await waitFor(() => {
-    expect(axios.put).toHaveBeenCalledTimes(1);
-  });
-});
 
 
 });
