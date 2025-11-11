@@ -141,45 +141,69 @@ const [newProduct,setNewProduct] = useState({
       </table>
 
       { showPopup && (
+    <div
+    style={popupOverlay}
+    >
         <div
-        style={popupOverlay}
+        style={popupBox}
         >
-          <div
-          style={popupBox}
-          >
             <h3>Update Product</h3>
             <form onSubmit={handleSubmit}>
-              <div>
-              <label>Name:</label>
-              <input type="text" name="name" value={selectedProduct.name}  onChange={handleChange}/>
-              </div>
-              <div>
-              <label>Description:</label>
-              <input type="text" name="description" value={selectedProduct.description} onChange={handleChange}/>
-              </div>
-              <div>
-              <label>Price:</label>
-              <input type="number" name="price" value={selectedProduct.price} onChange={handleChange}/>
-              </div>
-              <div>
-              <label>Stock:</label>
-              <input type="number" name="stock_quantity" value={selectedProduct.stock_quantity} onChange={handleChange}/>
-              </div>
-              <div
-                style={{
-                  marginTop:"10px"
-                }}
-                >
-                  <button type="submit" data-testid="save-btn">save</button>
-                  <button type="button" onClick={()=>
-                    setshowPopup(false)
-                  } style={{marginLeft:"10px"}}>cancel</button>
-              </div>
+                <div>
+                <label htmlFor="update-name">Name:</label> {/* Added htmlFor */}
+                <input 
+                    type="text" 
+                    id="update-name" // Added id
+                    name="name" 
+                    value={selectedProduct.name} 
+                    onChange={handleChange}
+                />
+                </div>
+                <div>
+                <label htmlFor="update-description">Description:</label> {/* Added htmlFor */}
+                <input 
+                    type="text" 
+                    id="update-description" // Added id
+                    name="description" 
+                    value={selectedProduct.description} 
+                    onChange={handleChange}
+                />
+                </div>
+                <div>
+                <label htmlFor="update-price">Price:</label> {/* Added htmlFor */}
+                <input 
+                    type="number" 
+                    id="update-price" // Added id
+                    name="price" 
+                    value={selectedProduct.price} 
+                    onChange={handleChange}
+                />
+                </div>
+                <div>
+                <label htmlFor="update-stock">Stock:</label> {/* Added htmlFor */}
+                <input 
+                    type="number" 
+                    id="update-stock" // Added id
+                    name="stock_quantity" 
+                    value={selectedProduct.stock_quantity} 
+                    onChange={handleChange}
+                />
+                </div>
+                <div
+                    style={{
+                        marginTop:"10px"
+                    }}
+                    >
+                        <button type="submit" data-testid="save-btn">save</button>
+                        <button type="button" onClick={()=>
+                            setshowPopup(false)
+                        } style={{marginLeft:"10px"}}>cancel</button>
+                </div>
             </form>
-          </div>
-          
         </div>
-      )}
+        
+    </div>
+)}
 
       {showAddPopup && (
         <div
