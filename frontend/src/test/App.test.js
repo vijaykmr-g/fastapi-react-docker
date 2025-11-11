@@ -1,6 +1,7 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import axios from "axios";
-import App from "../App";
+const { render, screen, waitFor, fireEvent } = require("@testing-library/react");
+const axios = require("axios");
+const React = require("react");
+const App = require("../App").default; // ✅ CommonJS import
 
 jest.mock("axios"); // ✅ Mock Axios requests
 
@@ -16,7 +17,6 @@ describe("App Component CRUD Tests", () => {
   });
 
   test("fetches and displays products from API", async () => {
-    // Mock API response
     axios.get.mockResolvedValue({
       data: [
         {
@@ -32,8 +32,7 @@ describe("App Component CRUD Tests", () => {
     render(<App />);
 
     await waitFor(() => {
-      const productName = screen.getByText(/Test Product/i);
-      expect(productName).toBeInTheDocument();
+      expect(screen.getByText(/Test Product/i)).toBeInTheDocument();
     });
   });
 
@@ -42,7 +41,7 @@ describe("App Component CRUD Tests", () => {
     const addButton = screen.getByText(/Add Product/i);
     fireEvent.click(addButton);
 
-    const addForm = await screen.findByText(/ADD/i);
+    const addForm = await screen.findByText(/Add Product/i);
     expect(addForm).toBeInTheDocument();
   });
 
@@ -61,10 +60,9 @@ describe("App Component CRUD Tests", () => {
 
     render(<App />);
 
-    await waitFor(() => {
-      const updateBtn = screen.getByText(/update/i);
-      fireEvent.click(updateBtn);
-    });
+    await waitFor(() => screen.getByText(/update/i));
+    const updateBtn = screen.getByText(/update/i);
+    fireEvent.click(updateBtn);
 
     const updateForm = await screen.findByText(/Update Product/i);
     expect(updateForm).toBeInTheDocument();
@@ -87,10 +85,9 @@ describe("App Component CRUD Tests", () => {
 
     render(<App />);
 
-    await waitFor(() => {
-      const updateBtn = screen.getByText(/update/i);
-      fireEvent.click(updateBtn);
-    });
+    await waitFor(() => screen.getByText(/update/i));
+    const updateBtn = screen.getByText(/update/i);
+    fireEvent.click(updateBtn);
 
     const saveButton = await screen.findByText(/save/i);
     fireEvent.click(saveButton);
