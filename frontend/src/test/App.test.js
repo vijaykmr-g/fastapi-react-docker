@@ -1,21 +1,32 @@
+/**
+ * @jest-environment jsdom
+ */
+
+const React = require("react");
 const { render, screen, waitFor, fireEvent } = require("@testing-library/react");
 const axios = require("axios");
-const React = require("react");
-const App = require("../App").default; // ✅ CommonJS import
+const App = require("../App").default;
 
-jest.mock("axios");
+// ✅ Proper Axios mock setup
+jest.mock("axios", () => ({
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn(),
+}));
 
 describe("App Component CRUD Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  // 🧩 Test 1 — Heading renders
   test("renders Product List heading", () => {
     render(<App />);
-    const heading = screen.getByText(/Product List/i);
-    expect(heading).toBeInTheDocument();
+    expect(screen.getByText(/Product List/i)).toBeInTheDocument();
   });
 
+  // 🧩 Test 2 — Fetch and display products
   test("fetches and displays products from API", async () => {
     axios.get.mockResolvedValueOnce({
       data: [
@@ -31,20 +42,20 @@ describe("App Component CRUD Tests", () => {
 
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Test Product/i)).toBeInTheDocument();
-    });
+    await waitFor(() =>
+      expect(screen.getByText(/Test Product/i)).toBeInTheDocument()
+    );
   });
 
+  // 🧩 Test 3 — Open Add Product popup
   test("opens Add Product popup when button clicked", async () => {
     render(<App />);
-    const addButton = screen.getByText(/Add Product/i);
-    fireEvent.click(addButton);
+    fireEvent.click(screen.getByText(/Add Product/i));
 
-    const addForm = await screen.findByText(/Add Product/i);
-    expect(addForm).toBeInTheDocument();
+    expect(await screen.findByText(/Add Product/i)).toBeInTheDocument();
   });
 
+  // 🧩 Test 4 — Open Update popup
   test("opens Update popup on update button click", async () => {
     axios.get.mockResolvedValueOnce({
       data: [
@@ -60,46 +71,46 @@ describe("App Component CRUD Tests", () => {
 
     render(<App />);
 
+    // Wait for update button to appear
     const updateBtn = await screen.findByText(/update/i);
     fireEvent.click(updateBtn);
 
-    const updateForm = await screen.findByText(/update product/i);
-    expect(updateForm).toBeInTheDocument();
+    expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
   });
 
-  // ✅ Fixed timing and added explicit waits
-  test("submits updated product successfully", async () => {
-    axios.get.mockResolvedValueOnce({
-      data: [
-        {
-          product_id: 1,
-          name: "Test Product",
-          description: "Good product",
-          price: 99,
-          stock_quantity: 10,
-        },
-      ],
-    });
-
-    axios.put.mockResolvedValueOnce({ status: 200 });
-
-    render(<App />);
-
-    // Wait for products to render
-    await waitFor(() => screen.getByText(/update/i));
-
-    const updateBtn = screen.getByText(/update/i);
-    fireEvent.click(updateBtn);
-
-    // ✅ Wait for popup form to appear
-    await waitFor(() => expect(screen.getByText(/update product/i)).toBeInTheDocument());
-
-    // ✅ Wait for "save" button (case-insensitive)
-    const saveButton = await screen.findByText(/save/i);
-
-    fireEvent.click(saveButton);
-
-    // ✅ Verify API PUT call
-    await waitFor(() => expect(axios.put).toHaveBeenCalledTimes(1));
+  // 🧩 Test 5 — Submit updated product
+test("submits updated product successfully", async () => {
+  axios.get.mockResolvedValueOnce({
+    data: [
+      {
+        product_id: 1,
+        name: "Test Product",
+        description: "Good product",
+        price: 99,
+        stock_quantity: 10,
+      },
+    ],
   });
+
+  axios.put.mockResolvedValueOnce({ status: 200 });
+
+  render(<App />);
+
+  // ✅ Wait for the "update" button to appear and click it
+  const updateBtn = await screen.findByText(/update/i);
+  fireEvent.click(updateBtn);
+
+  // ✅ Wait for the form/modal containing the "save" button to appear
+  await waitFor(() => {
+    expect(screen.getByText(/save/i)).toBeInTheDocument();
+  });
+
+  // ✅ Click the "save" button once it’s rendered
+  const saveButton = screen.getByText(/save/i);
+  fireEvent.click(saveButton);
+
+  // ✅ Verify axios.put was called once
+  await waitFor(() => expect(axios.put).toHaveBeenCalledTimes(1));
+});
+
 });
