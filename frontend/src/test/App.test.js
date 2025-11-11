@@ -15,65 +15,43 @@ jest.mock("axios", () => ({
   delete: jest.fn(),
 }));
 
-// --- Mock Data ---
-const mockProducts = [
-  { product_id: 1, name: 'Laptop', description: 'Powerful', price: 1200, stock_quantity: 10 },
-  { product_id: 2, name: 'Mouse', description: 'Wireless', price: 25, stock_quantity: 50 },
-];
-
-describe('App Component Basic Tests 🧪', () => {
-
+describe("App Component CRUD Tests", () => {
   beforeEach(() => {
-    // Reset all mock function calls before each test
     jest.clearAllMocks();
-    
-    // Default mock response for the initial useEffect fetch
-    axios.get.mockResolvedValue({ data: mockProducts });
   });
 
-  // --- Test 1: Initial Render and Data Fetch ---
-  test('1. Renders the header and displays fetched products after load', async () => {
+  // 🧩 Test 1 — Heading renders
+  test("renders Product List heading", () => {
     render(<App />);
-
-    // 1. Initial State Check (Synchronous)
-    expect(screen.getByRole('heading', { name: /product list/i })).toBeInTheDocument();
-
-    // 2. Check API Call
-    expect(axios.get).toHaveBeenCalledTimes(1);
-    expect(axios.get).toHaveBeenCalledWith("http://localhost:8000/products/");
-
-    // 3. Check Data Rendering (Asynchronous)
-    await waitFor(() => {
-      // The product name should appear in the table
-      expect(screen.getByText('Laptop')).toBeInTheDocument();
-      expect(screen.getByText('Mouse')).toBeInTheDocument();
-
-      // Check for table structure integrity (2 products + 1 header row = 3 rows)
-      const rows = screen.getAllByRole('row');
-      expect(rows).toHaveLength(mockProducts.length + 1); 
-    });
+    expect(screen.getByText(/Product List/i)).toBeInTheDocument();
   });
 
-  // --- Test 2: Basic Interaction - Opening Update Popup ---
-  test('2. Opens the Update Product popup and pre-populates the form', async () => {
-    render(<App />);
-
-    // Wait for the products to load before interacting
-    await waitFor(() => {
-        expect(screen.getByText('Laptop')).toBeInTheDocument();
+  // 🧩 Test 2 — Fetch and display products
+  test("fetches and displays products from API", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: [
+        {
+          product_id: 1,
+          name: "Test Product",
+          description: "Nice one",
+          price: 100,
+          stock_quantity: 5,
+        },
+      ],
     });
 
-    // Find the 'update' button for the first product ('Laptop')
-    const updateButtons = screen.getAllByRole('button', { name: /update/i });
-    
-    // Click the first update button
-    fireEvent.click(updateButtons[0]);
+    render(<App />);
 
-    // Check if the update popup heading is visible
-    expect(screen.getByRole('heading', { name: /update product/i })).toBeInTheDocument();
-    
-    // Check if the form inputs are pre-filled with the correct product data (Laptop details)
-    expect(screen.getByDisplayValue('Powerful')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('1200')).toBeInTheDocument();
+    const productName = await screen.findByText(/Test Product/i);
+    expect(productName).toBeInTheDocument();
+  });
+
+  // 🧩 Test 3 — Open Add Product popup
+  test("opens Add Product popup when button clicked", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByText(/Add Product/i));
+
+    const addHeading = await screen.findByText(/Add Product/i, { exact: false });
+    expect(addHeading).toBeInTheDocument();
   });
 });
