@@ -68,13 +68,13 @@ jobs:
           node-version: "20"
 
       - name: 🧰 Install frontend dependencies
-        working-directory: ./Frontend
+        working-directory: ./frontend
         run: npm ci
 
       - name: ✅ Run frontend tests
-        working-directory: ./Frontend
+        working-directory: ./frontend
         run: npm test -- --watchAll=false
 
       - name: 🧹 Build frontend (optional sanity check)
-        working-directory: ./Frontend
+        working-directory: ./frontend
         run: npm run build
