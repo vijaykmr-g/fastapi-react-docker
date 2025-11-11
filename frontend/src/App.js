@@ -170,7 +170,7 @@ const [newProduct,setNewProduct] = useState({
                   marginTop:"10px"
                 }}
                 >
-                  <button type="submit">save</button>
+                  <button type="submit" data-testid="save-btn">save</button>
                   <button type="button" onClick={()=>
                     setshowPopup(false)
                   } style={{marginLeft:"10px"}}>cancel</button>

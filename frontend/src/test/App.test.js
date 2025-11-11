@@ -78,40 +78,35 @@ describe("App Component CRUD Tests", () => {
     expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
   });
 
-// 🧩 Test 5 — Submit updated product successfully
-test("submits updated product successfully", async () => {
-  axios.get.mockResolvedValueOnce({
-    data: [
-      {
-        product_id: 1,
-        name: "Test Product",
-        description: "Good product",
-        price: 99,
-        stock_quantity: 10,
-      },
-    ],
+  // 🧩 Test 5 — Submit updated product successfully
+  test("submits updated product successfully", async () => {
+    axios.get.mockResolvedValueOnce({
+      data: [
+        {
+          product_id: 1,
+          name: "Test Product",
+          description: "Good product",
+          price: 99,
+          stock_quantity: 10,
+        },
+      ],
+    });
+
+    axios.put.mockResolvedValueOnce({ status: 200 });
+
+    render(<App />);
+
+    // Wait for the update button and click it
+    const updateBtn = await screen.findByText(/update/i);
+    fireEvent.click(updateBtn);
+
+    // Wait for the "save" button in the popup
+    const saveButton = await screen.findByTestId("save-btn");
+    fireEvent.click(saveButton);
+
+    // Verify axios.put was called
+    await waitFor(() => expect(axios.put).toHaveBeenCalledTimes(1));
+
   });
-
-  axios.put.mockResolvedValueOnce({ status: 200 });
-
-  render(<App />);
-
-  // ✅ Wait for the update button to appear and click it
-  const updateBtn = await screen.findByText(/update/i);
-  fireEvent.click(updateBtn);
-
-  // ✅ Use a longer timeout and more flexible query for the "save" button
-  const saveButton = await screen.findByRole(
-    "button",
-    { name: /save/i },
-    { timeout: 3000 } // allow up to 3 seconds for rendering
-  );
-
-  // ✅ Click the save button
-  fireEvent.click(saveButton);
-
-  // ✅ Verify axios.put was called once
-  await waitFor(() => expect(axios.put).toHaveBeenCalledTimes(1));
-});
 
 });
