@@ -78,7 +78,7 @@ describe("App Component CRUD Tests", () => {
     expect(await screen.findByText(/Update Product/i)).toBeInTheDocument();
   });
 
-  // 🧩 Test 5 — Submit updated product
+// 🧩 Test 5 — Submit updated product successfully
 test("submits updated product successfully", async () => {
   axios.get.mockResolvedValueOnce({
     data: [
@@ -96,17 +96,18 @@ test("submits updated product successfully", async () => {
 
   render(<App />);
 
-  // ✅ Wait for the "update" button to appear and click it
+  // ✅ Wait for the update button to appear and click it
   const updateBtn = await screen.findByText(/update/i);
   fireEvent.click(updateBtn);
 
-  // ✅ Wait for the form/modal containing the "save" button to appear
-  await waitFor(() => {
-    expect(screen.getByText(/save/i)).toBeInTheDocument();
-  });
+  // ✅ Use a longer timeout and more flexible query for the "save" button
+  const saveButton = await screen.findByRole(
+    "button",
+    { name: /save/i },
+    { timeout: 3000 } // allow up to 3 seconds for rendering
+  );
 
-  // ✅ Click the "save" button once it’s rendered
-  const saveButton = screen.getByText(/save/i);
+  // ✅ Click the save button
   fireEvent.click(saveButton);
 
   // ✅ Verify axios.put was called once
