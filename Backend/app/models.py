@@ -11,3 +11,12 @@ class Product(base):
     price = Column(Numeric(10,2), nullable=False)
     stock_quantity = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Users(base):
+    __tablename__ = "users"
+
+    userid = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50),unique=True,index=True)
+    email = Column(String(100),unique=True)
+    hased_password = Column(String(255))
+    

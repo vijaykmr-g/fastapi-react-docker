@@ -6,3 +6,6 @@ pytest
 httpx
 pytest-asyncio
 python-dotenv
+python-jose
+passlib[bcrypt] 
+python-multipart
