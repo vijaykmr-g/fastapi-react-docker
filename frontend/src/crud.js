@@ -23,6 +23,10 @@ const [newProduct,setNewProduct] = useState({
 
   // Fetch data from FastAPI
   useEffect(() => {
+    if (!token) {
+      console.warn("No token found — user must log in first.");
+      return;
+    }
     axios
       .get("http://localhost:8000/products/",{headers: { Authorization: `Bearer ${token}` },})  // 🔗 FastAPI endpoint
       .then((res) => {
