@@ -22,25 +22,6 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
-# --- Product Tests ---
-def test_get_url():
-    response = client.get("/products")
-    assert response.status_code == 200
-
-def test_post_url():
-    data = {
-        "name": "test_product",
-        "description": "testing the product",
-        "price": 125.5,
-        "stock_quantity": 12
-    }
-    response = client.post("/products", json=data)
-    assert response.status_code in (200, 201)
-    assert response.json()["name"] == "test_product"
-
-def test_invalid_url():
-    response = client.get('/invalid')
-    assert response.status_code == 404
 
 
 # --- JWT Authentication Tests ---
@@ -79,3 +60,25 @@ def test_invalid_token():
     headers = {"Authorization": "Bearer invalidtoken123"}
     response = client.get("/products", headers=headers)
     assert response.status_code in [401, 403]
+
+
+
+# --- Product Tests ---
+def test_get_url():
+    response = client.get("/products")
+    assert response.status_code == 200
+
+def test_post_url():
+    data = {
+        "name": "test_product",
+        "description": "testing the product",
+        "price": 125.5,
+        "stock_quantity": 12
+    }
+    response = client.post("/products", json=data)
+    assert response.status_code in (200, 201)
+    assert response.json()["name"] == "test_product"
+
+def test_invalid_url():
+    response = client.get('/invalid')
+    assert response.status_code == 404
