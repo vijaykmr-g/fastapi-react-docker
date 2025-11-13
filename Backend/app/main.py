@@ -14,25 +14,19 @@ SECRET_KEY = "mysecretkey_123"
 
 app = FastAPI()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")   # 'sub' holds username in your token
+        username = payload.get("sub")
         if username is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token payload",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise HTTPException(status_code=401, detail="Invalid token")
         return {"username": username}
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    except BaseException as e:
+        print('e--',e)
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 def get_db():
     db_session = db.sessionlocal()  # create session
@@ -67,6 +61,14 @@ def createToken(username: str):
         "exp": expire.timestamp()  # ✅ convert datetime → float timestamp
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def createToken(data: dict):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return token  # ✅ returns a string
+
 
 def verifyToken(token: str):
     try:

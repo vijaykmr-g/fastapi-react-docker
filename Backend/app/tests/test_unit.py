@@ -23,11 +23,12 @@ app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 # --- Helper to login and get token ---
-def get_auth_header(username="testuser", password="testpassword"):
-    login_data = {"username": username, "password": password}
+def get_auth_header():
+    login_data = {"username": "testuser", "password": "testpassword"}
     login_response = client.post("/login", data=login_data)
     token = login_response.json().get("access_token")
     return {"Authorization": f"Bearer {token}"}
+
 
 # --- CRUD Tests ---
 
