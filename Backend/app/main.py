@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import models, db, schemas
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,timezone
 from jose import JWTError,jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,7 +13,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 10
 SECRET_KEY = "mysecretkey_123"
 
 app = FastAPI()
-
 
 def get_db():
     db_session = db.sessionlocal()  # create session
@@ -32,46 +31,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
 
 
-def verify_password(password,hased_password):
-    return pwd_context.verify(password,hased_password)
+def verify_password(password, hashed_password):
+    return pwd_context.verify(password, hashed_password)
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-
 
 def createToken(username:str):
     expire = datetime.utcnow()+timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"username":username,"expire":expire}
     return jwt.encode(payload,SECRET_KEY,ALGORITHM)
 
-def verifyToken(token:str):
+def createToken(username: str):
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "sub": username,
+        "exp": expire.timestamp()  # ✅ convert datetime → float timestamp
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def verifyToken(token: str):
     try:
-        payload = jwt.decode(token,SECRET_KEY,algorithms={ALGORITHM})
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload["username"]
     except JWTError:
-        raise HTTPException(status_code=400,detail="Invalid Token")
+        raise HTTPException(status_code=400, detail="Invalid Token")
 
-@app.post("/register",response_model=schemas.UserResponse)
-def register(user:schemas.UserCreate,db:Session=Depends(get_db)):
-    existing_user = db.query(models.Users).filter(models.Users.username==user.username).first()
+
+@app.post("/register", response_model=schemas.UserResponse)
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(models.Users).filter(models.Users.username == user.username).first()
     if existing_user:
-        raise HTTPException(status_code=400,detail="Username Already Exists")
-    hashed_password = get_password_hash(user.password)
-    new_user = models.Users(username=user.username,email=user.email,hashed_password=user.password)
+        raise HTTPException(status_code=400, detail="Username Already Exists")
+
+    hashed_pwd = get_password_hash(user.password)
+    new_user = models.Users(username=user.username, email=user.email, hashed_password=hashed_pwd)
     db.add(new_user)
     db.commit()
+    db.refresh(new_user)
     return new_user
 
 @app.post("/login")
-def login(formdata:OAuth2PasswordRequestForm,db:Session=Depends(get_db)):
-    user = db.query(models.user).filter(models.Users.username==formdata.username).first()
-    if not user or not verify_password(formdata.password,user.hashed_password):
-        raise HTTPException(status_code=401,detail="Incorrect username or Password")
-    token = createToken(formdata.username)
-    return {"access token":token,"token_type":"bearer"}
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.username == form_data.username).first()
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+
+    access_token = createToken({"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/secure_data")
 def secure_data(token:str):
