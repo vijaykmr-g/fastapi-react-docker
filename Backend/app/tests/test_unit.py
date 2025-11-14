@@ -23,21 +23,10 @@ app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
-def register_test_user():
-    data = {
-        "username": "testuser3",
-        "email": "test@example.com",
-        "password": "123456"
-    }
-    response = client.post("/register", json=data)
-    # If user exists already, skip error
-    assert response.status_code in (200, 400)
-
-
 def login_test_user():
     response = client.post(
         "/login",
-        data={"username": "testuser3", "password": "123456"},
+        data={"username": "testuser", "password": "testpasword"},
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
 
