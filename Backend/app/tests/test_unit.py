@@ -22,12 +22,38 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
+
+def register_test_user():
+    data = {
+        "username": "testuser2",
+        "email": "test@example.com",
+        "password": "123456"
+    }
+    response = client.post("/register", json=data)
+    # If user exists already, skip error
+    assert response.status_code in (200, 400)
+
+
+def login_test_user():
+    response = client.post(
+        "/login",
+        data={"username": "testuser2", "password": "123456"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+
+    assert response.status_code == 200, response.text
+    token = response.json()["access_token"]
+
+    return {"Authorization": f"Bearer {token}"}
+
+
 # --- Helper to login and get token ---
 def get_auth_header():
-    login_data = {"username": "testuser", "password": "testpassword"}
+    login_data = {"username": "testuser2", "password": "123456"}
     login_response = client.post("/login", data=login_data)
     token = login_response.json().get("access_token")
     return {"Authorization": f"Bearer {token}"}
+
 
 
 # --- CRUD Tests ---
@@ -36,6 +62,7 @@ def test_get_url():
     headers = get_auth_header()
     response = client.get("/products", headers=headers)
     assert response.status_code == 200
+
 
 def test_post_url():
     headers = get_auth_header()

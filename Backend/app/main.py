@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
 
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 10
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 SECRET_KEY = "mysecretkey_123"
 
 app = FastAPI()

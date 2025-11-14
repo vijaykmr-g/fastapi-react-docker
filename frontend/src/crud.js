@@ -56,8 +56,8 @@ const [newProduct,setNewProduct] = useState({
     e.preventDefault();
     try {
       const res = await axios.put(
-        `http://localhost:8000/products/${selectedProduct.product_id}`,{headers: { Authorization: `Bearer ${token}` },},
-        selectedProduct
+        `http://localhost:8000/products/${selectedProduct.product_id}`,selectedProduct,{headers: { Authorization: `Bearer ${token}` },}
+        
       );
       if (res.status === 200) {
         alert("Product updated!");
