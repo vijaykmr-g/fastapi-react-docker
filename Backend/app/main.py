@@ -123,6 +123,7 @@ def createproduct(product:schemas.ProductCreate,db:Session = Depends(get_db),cur
     db.commit()
     return new_product
 
+
 @app.put("/products/{product_id}",response_model=schemas.ProductResponse)
 def update_product(product_id:int,updated_data:schemas.ProductUpdate,db:Session=  Depends(get_db),current_user: dict = Depends(get_current_user)):
     print('product detail is',product_id)
