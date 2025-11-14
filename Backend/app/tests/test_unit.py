@@ -25,7 +25,7 @@ client = TestClient(app)
 
 def register_test_user():
     data = {
-        "username": "testuser2",
+        "username": "testuser3",
         "email": "test@example.com",
         "password": "123456"
     }
@@ -37,7 +37,7 @@ def register_test_user():
 def login_test_user():
     response = client.post(
         "/login",
-        data={"username": "testuser2", "password": "123456"},
+        data={"username": "testuser3", "password": "123456"},
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
 
