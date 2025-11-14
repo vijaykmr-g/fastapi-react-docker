@@ -30,13 +30,24 @@ def get_auth_header():
     return {"Authorization": f"Bearer {token}"}
 
 
+def login_test_user():
+    response = client.post(
+        "/login",
+        data="username=testuser&password=testpassword",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+
+    assert response.status_code == 200, response.text
+    token = response.json()["access_token"]
+
+    return {"Authorization": f"Bearer {token}"}
+
+
 
 # --- CRUD Tests ---
 
-
-
 def test_post_url():
-    headers = get_auth_header()
+    headers = login_test_user()
     data = {
         "name": "test_product",
         "description": "testing the product",
