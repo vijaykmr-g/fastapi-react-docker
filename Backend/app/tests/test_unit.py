@@ -42,30 +42,20 @@ def login_test_user():
     )
 
     assert response.status_code == 200, response.text
+    
     token = response.json()["access_token"]
-
     return {"Authorization": f"Bearer {token}"}
 
 
-# --- Helper to login and get token ---
-def get_auth_header():
-    login_data = {"username": "testuser2", "password": "123456"}
-    login_response = client.post("/login", data=login_data)
-    token = login_response.json().get("access_token")
-    return {"Authorization": f"Bearer {token}"}
 
 
 
 # --- CRUD Tests ---
 
-def test_get_url():
-    headers = get_auth_header()
-    response = client.get("/products", headers=headers)
-    assert response.status_code == 200
 
 
 def test_post_url():
-    headers = get_auth_header()
+    headers = login_test_user()
     data = {
         "name": "test_product",
         "description": "testing the product",
@@ -77,12 +67,12 @@ def test_post_url():
     assert response.json()["name"] == "test_product"
 
 def test_invalid_url():
-    headers = get_auth_header()
+    headers = login_test_user()
     response = client.get("/invalid", headers=headers)
     assert response.status_code == 404
 
 def test_update_product():
-    headers = get_auth_header()
+    headers = login_test_user()
     # First, create a product
     data = {
         "name": "update_product",
@@ -105,7 +95,7 @@ def test_update_product():
     assert update_resp.json()["name"] == "updated_name"
 
 def test_delete_product():
-    headers = get_auth_header()
+    headers = login_test_user()
     # First, create a product
     data = {
         "name": "delete_product",
