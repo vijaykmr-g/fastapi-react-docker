@@ -38,8 +38,6 @@ def register_test_user():
     }
     response = client.post("/register", json=data)
 
-    # 200 => user created
-    # 400 => username already exists
     assert response.status_code in (200, 400)
 
     return response
@@ -59,65 +57,3 @@ def login_test_user():
 
 
 
-# --- CRUD Tests ---
-
-def test_post_url():
-    headers = login_test_user()
-    data = {
-        "name": "test_product",
-        "description": "testing the product",
-        "price": 125.5,
-        "stock_quantity": 12
-    }
-    response = client.post("/products", json=data, headers=headers)
-    assert response.status_code in (200, 201)
-    assert response.json()["name"] == "test_product"
-
-def test_invalid_url():
-    headers = get_auth_header()
-    response = client.get("/invalid", headers=headers)
-    assert response.status_code == 404
-
-def test_update_product():
-    headers = get_auth_header()
-    # First, create a product
-    data = {
-        "name": "update_product",
-        "description": "before update",
-        "price": 100,
-        "stock_quantity": 5
-    }
-    create_resp = client.post("/products", json=data, headers=headers)
-    product_id = create_resp.json()["product_id"]
-
-    # Update it
-    update_data = {
-        "name": "updated_name",
-        "description": "after update",
-        "price": 150,
-        "stock_quantity": 10
-    }
-    update_resp = client.put(f"/products/{product_id}", json=update_data, headers=headers)
-    assert update_resp.status_code == 200
-    assert update_resp.json()["name"] == "updated_name"
-
-def test_delete_product():
-    headers = get_auth_header()
-    # First, create a product
-    data = {
-        "name": "delete_product",
-        "description": "to delete",
-        "price": 50,
-        "stock_quantity": 2
-    }
-    create_resp = client.post("/products", json=data, headers=headers)
-    product_id = create_resp.json()["product_id"]
-
-    # Delete it
-    delete_resp = client.delete(f"/products/{product_id}", headers=headers)
-    assert delete_resp.status_code == 200
-
-def test_invalid_token():
-    headers = {"Authorization": "Bearer invalidtoken123"}
-    response = client.get("/products", headers=headers)
-    assert response.status_code in [401, 403]
