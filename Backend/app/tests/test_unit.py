@@ -21,32 +21,37 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
-
-# -------------------------
-#  Register Test User
-# -------------------------
 def register_test_user():
     data = {
-        "username": "testuser4",
-        "email": "test@example.com",
+        "username": "testuser1",
+        "email": "test1@example.com",
         "password": "1234567"
     }
-    response = client.post("/register", json=data)
-    assert response.status_code in (200, 400)  # 400 = already exists
-    return response
+    return client.post("/register", json=data)
 
 
-# -------------------------
-#  Login Test User
-# -------------------------
 def login_test_user():
-    response = client.post(
-        "/login",
-        data="username=testuser4&password=1234567",
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
-
-    assert response.status_code == 200, response.text
-
+    data = {
+        "username": "testuser1",
+        "password": "1234567"
+    }
+    response = client.post("/login", data=data)
+    assert response.status_code == 200
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+def test_register():
+    response = register_test_user()
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "testuser1"
+    assert data["email"] == "test1@example.com"
+
+
+def test_register():
+    response = register_test_user()
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "testuser1"
+    assert data["email"] == "test1@example.com"
