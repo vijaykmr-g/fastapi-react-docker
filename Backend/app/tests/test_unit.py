@@ -22,20 +22,12 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
-
-def login_test_user():
-    response = client.post(
-        "/login",
-        data={"username": "testuser", "password": "testpasword"},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
-
-    assert response.status_code == 200, response.text
-    
-    token = response.json()["access_token"]
+# --- Helper to login and get token ---
+def get_auth_header():
+    login_data = {"username": "testuser", "password": "testpassword"}
+    login_response = client.post("/login", data=login_data)
+    token = login_response.json().get("access_token")
     return {"Authorization": f"Bearer {token}"}
-
-
 
 
 
@@ -44,7 +36,7 @@ def login_test_user():
 
 
 def test_post_url():
-    headers = login_test_user()
+    headers = get_auth_header()
     data = {
         "name": "test_product",
         "description": "testing the product",
@@ -56,12 +48,12 @@ def test_post_url():
     assert response.json()["name"] == "test_product"
 
 def test_invalid_url():
-    headers = login_test_user()
+    headers = get_auth_header()
     response = client.get("/invalid", headers=headers)
     assert response.status_code == 404
 
 def test_update_product():
-    headers = login_test_user()
+    headers = get_auth_header()
     # First, create a product
     data = {
         "name": "update_product",
@@ -84,7 +76,7 @@ def test_update_product():
     assert update_resp.json()["name"] == "updated_name"
 
 def test_delete_product():
-    headers = login_test_user()
+    headers = get_auth_header()
     # First, create a product
     data = {
         "name": "delete_product",
