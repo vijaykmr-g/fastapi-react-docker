@@ -30,10 +30,25 @@ def get_auth_header():
     return {"Authorization": f"Bearer {token}"}
 
 
+def register_test_user():
+    data = {
+        "username": "testuser4",
+        "email": "test@example.com",
+        "password": "1234567"
+    }
+    response = client.post("/register", json=data)
+
+    # 200 => user created
+    # 400 => username already exists
+    assert response.status_code in (200, 400)
+
+    return response
+
+
 def login_test_user():
     response = client.post(
         "/login",
-        data="username=testuser&password=testpassword",
+        data="username=testuser4&password=1234567",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
 
